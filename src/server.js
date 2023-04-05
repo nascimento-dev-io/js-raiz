@@ -1,5 +1,10 @@
+// node 16.1.0
+
 import http from 'http';
 import fs from 'fs';
+import ejs from 'ejs';
+
+import data from './assets/data.js';
 
 const server = http.createServer((request, response) => {
   response.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,22 +21,27 @@ const server = http.createServer((request, response) => {
     response.writeHead(200, {
       'Content-Type': 'text/html',
     });
-    response.write(`<!DOCTYPE html>
-    <html >
-    <head>
-      <title>Js Raiz</title>
-    </head>
-    <body>
-     <h1>Hello Js Raiz!!</h1>
-      
-      <script type='module' src="main.js" ></script>
-    </body>
-    </html>`);
-    response.end();
+
+    const templateData = {
+      menus: Array.from(data.menus.values())
+        .slice(0, 3)
+        .map((menu) => ({
+          ...menu,
+          restaurant: { name: data.restaurants.get(menu.restaurantId).name },
+        })),
+    };
+
+    ejs.renderFile('./src/templates/index.ejs', templateData, (err, str) => {
+      if (err) {
+        console.error(err);
+      }
+      response.write(str);
+      response.end();
+    });
   }
 });
 
-server.listen(9000, (err) => {
+server.listen(3003, (err) => {
   if (err) console.log(err);
-  console.log('server running on port 9000');
+  console.log('server running on port 3003');
 });
