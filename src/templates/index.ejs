@@ -1,23 +1,28 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-br">
   <head>
+    <meta charset="utf-8" />
     <title>Js Raiz</title>
   </head>
   <body>
-    <% menus.forEach(function(menu) { %>
-    <div class="cardapio">
-      <header>
-        <h3><%= menu.title %> - <%= menu.restaurant.name %></h3>
-      </header>
-      <div class="cardapio-body">
-        <ul>
-          <% menu.sections.forEach(function(section) { %>
-          <li><%= section.title %></li>
-          <% }) %>
-        </ul>
+    <div id="app">
+      <div class="cardapios">
+        <% menus.forEach(function(menu) { %>
+        <div class="cardapio">
+          <header>
+            <h3><%= menu.title %> - <%= menu.restaurant.name %></h3>
+          </header>
+          <div class="cardapio-body">
+            <ul>
+              <% menu.sections.forEach(function(section) { %>
+              <li><%= section.title %></li>
+              <% }) %>
+            </ul>
+          </div>
+        </div>
+        <% }) %>
       </div>
     </div>
-    <% }) %>
     <script type="module" src="main.js"></script>
   </body>
 </html>

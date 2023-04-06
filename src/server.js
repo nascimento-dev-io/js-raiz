@@ -32,9 +32,8 @@ const server = http.createServer((request, response) => {
     };
 
     ejs.renderFile('./src/templates/index.ejs', templateData, (err, str) => {
-      if (err) {
-        console.error(err);
-      }
+      if (err) console.error(err);
+
       response.write(str);
       response.end();
     });
