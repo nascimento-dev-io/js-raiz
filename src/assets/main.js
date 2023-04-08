@@ -1,7 +1,46 @@
 import data from './data.js';
 
+function extractTagName(tagName) {
+  // div#card.card.cardapio
+  return tagName.match(/^\w+/)[0];
+}
+
+function extractClassesAndId(tagName) {
+  const regexp = /[\#\.]{1}([\w\-\_]*)/gi;
+
+  return Array.from(tagName.matchAll(regexp)).reduce(
+    (acc, current) => {
+      if (current[0].startsWith('.')) {
+        acc.classes.push(current[1]);
+      } else {
+        acc.id.push(current[1]);
+      }
+      return acc;
+    },
+    {
+      classes: [],
+      id: [],
+    },
+  );
+}
+
+const isString = (value) => typeof value === 'string';
+
 function isChildren(childrens) {
   return Array.isArray(childrens) || typeof childrens === 'string';
+}
+
+function normalizeChildrens(childrens) {
+  if (isString(childrens)) {
+    return [document.createTextNode(childrens)];
+  }
+
+  if (Array.isArray(childrens)) {
+    return childrens.map(($children) =>
+      isString($children) ? document.createTextNode($children) : $children,
+    );
+  }
+  return childrens;
 }
 
 function el(tagName, attrsArr, childrensArr) {
@@ -9,11 +48,19 @@ function el(tagName, attrsArr, childrensArr) {
    * Se o segundo argumento (attrs) for um array, significa que não temos atributos
    * Se o segundo argumento (attrs) for uma string, significa que não temos atributos
    * Os filhos podem ser ou array ou string
-   
-  */
-
-  const $element = document.createElement(tagName);
+   */
+  const $element = document.createElement(extractTagName(tagName));
   const childrens = isChildren(attrsArr) ? attrsArr : childrensArr;
+
+  const { id, classes } = extractClassesAndId(tagName);
+
+  if (id.length) {
+    $element.id = id.pop();
+  }
+
+  if (classes.length) {
+    $element.classList.add(...classes);
+  }
 
   const attrs = !isChildren(attrsArr) ? attrsArr : {};
 
@@ -21,29 +68,22 @@ function el(tagName, attrsArr, childrensArr) {
     $element.setAttribute(key, value);
   });
 
-  if (typeof childrens === 'string') {
-    const text = document.createTextNode(childrens);
-    $element.appendChild(text);
-  } else {
-    childrens.forEach(($children) => {
-      $element.appendChild($children);
-    });
+  const $childrens = normalizeChildrens(childrens);
 
-    // for (const $children of childrensArr) {
-    //   $element.appendChild($children);
-    // }
-  }
+  $childrens.forEach(($children) => {
+    $element.appendChild($children);
+  });
 
   return $element;
 }
 
 function templateCardapio(menu) {
   return el(
-    'div',
+    'div.cardapio',
     { style: 'background: #FEE0B3; color: #730A0D; padding: 8px; margin:8px' },
     [
       el('header', [el('h3', `${menu.title} - ${menu.restaurant.name}`)]),
-      el('div', [
+      el('div.cardapio-body', [
         el(
           'ul',
           menu.sections.map((section) => el('li', `${section.title}`)),
@@ -65,5 +105,4 @@ Array.from(data.menus.values())
   }))
   .forEach((menu) => $fragment.appendChild(templateCardapio(menu)));
 
-// $cardapios.insertAdjacentHTML('beforeend', templateCardapios);
 $cardapios.appendChild($fragment);
