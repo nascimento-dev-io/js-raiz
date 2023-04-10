@@ -1,10 +1,10 @@
-// node 16.1.0
-
 import http from 'http';
 import fs from 'fs';
 import ejs from 'ejs';
 
 import data from './assets/data.js';
+import { renderServer } from './assets/lib/dom.js';
+import CardCardapio from './assets/components/CardCardapio.js';
 
 const server = http.createServer((request, response) => {
   response.setHeader('Access-Control-Allow-Origin', '*');
@@ -22,13 +22,17 @@ const server = http.createServer((request, response) => {
       'Content-Type': 'text/html',
     });
 
+    const menus = Array.from(data.menus.values())
+      .slice(0, 3)
+      .map((menu) => ({
+        ...menu,
+        restaurant: { name: data.restaurants.get(menu.restaurantId).name },
+      }));
+
     const templateData = {
-      menus: Array.from(data.menus.values())
-        .slice(0, 3)
-        .map((menu) => ({
-          ...menu,
-          restaurant: { name: data.restaurants.get(menu.restaurantId).name },
-        })),
+      App() {
+        return menus.map((menu) => renderServer(CardCardapio(menu))).join('');
+      },
     };
 
     ejs.renderFile('./src/templates/index.ejs', templateData, (err, str) => {
