@@ -60,6 +60,8 @@ const autoSelfTags = [
 ];
 
 export default function el(tag, attrsArr = {}, childrensArr = []) {
+  if (typeof tag === 'function') return tag(attrsArr);
+
   const tagName = extractTagName(tag);
 
   const autoSelf = autoSelfTags.includes(tag);
@@ -90,8 +92,12 @@ export default function el(tag, attrsArr = {}, childrensArr = []) {
 export function renderServer(node) {
   if (isString(node)) return node;
 
+  if (node.nodeType === 'fragment') {
+    return node.childrens.map(renderServer).join('');
+  }
+
   const { tagName, autoSelf, attrs, childrens } = node;
-  console.log(attrs);
+
   const attrsHTML = Object.entries(attrs)
     .map(([attrKey, attrValue]) => {
       const values = Array.isArray(attrValue) ? attrValue.join(' ') : attrValue;
@@ -112,4 +118,37 @@ export function renderServer(node) {
   const html = `${startTag}${childrensHTML}${endTag}`;
 
   return html;
+}
+
+export function render(node) {
+  if (isString(node)) {
+    return document.createTextNode(node);
+  }
+
+  const { tagName, attrs, childrens } = node;
+
+  const $element =
+    node.nodeType === 'fragment'
+      ? document.createDocumentFragment()
+      : document.createElement(tagName);
+
+  Object.entries(attrs).forEach(function ([attrKey, attrValue]) {
+    const values = Array.isArray(attrValue) ? attrValue.join(' ') : attrValue;
+    $element.setAttribute(attrKey.replaceAll('classNames', 'class'), values);
+  });
+
+  childrens.forEach(function (children) {
+    $element.appendChild(render(children));
+  });
+
+  return $element;
+}
+
+export function Fragment(childrens) {
+  return {
+    tagName: null,
+    nodeType: 'fragment',
+    attrs: {},
+    childrens: childrens ? childrens : [],
+  };
 }

@@ -3,7 +3,7 @@ import fs from 'fs';
 import ejs from 'ejs';
 
 import data from './assets/data.js';
-import { renderServer } from './assets/lib/dom.js';
+import el, { Fragment, renderServer } from './assets/lib/dom.js';
 import CardCardapio from './assets/components/CardCardapio.js';
 
 const server = http.createServer((request, response) => {
@@ -31,7 +31,7 @@ const server = http.createServer((request, response) => {
 
     const templateData = {
       App() {
-        return menus.map((menu) => renderServer(CardCardapio(menu))).join('');
+        return renderServer(el(Fragment, menus.map(CardCardapio)));
       },
     };
 

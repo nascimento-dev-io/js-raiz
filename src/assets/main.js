@@ -1,16 +1,14 @@
 import CardCardapio from './components/CardCardapio.js';
 import data from './data.js';
+import el, { Fragment, render } from './lib/dom.js';
 
-const $cardapios = document.querySelector('.cardapios');
+const $cardapios = document.querySelector('#app');
 
-const $fragment = document.createDocumentFragment();
-
-Array.from(data.menus.values())
+const menus = Array.from(data.menus.values())
   .slice(3)
   .map((menu) => ({
     ...menu,
     restaurant: { name: data.restaurants.get(menu.restaurantId).name },
-  }))
-  .forEach((menu) => console.log(CardCardapio(menu)));
+  }));
 
-// $cardapios.appendChild($fragment);
+$cardapios.appendChild(render(el(Fragment, menus.map(CardCardapio))));
